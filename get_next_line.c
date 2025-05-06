@@ -6,7 +6,7 @@
 /*   By: fio <fio@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 17:11:10 by fio               #+#    #+#             */
-/*   Updated: 2025/05/06 01:26:43 by fio              ###   ########.fr       */
+/*   Updated: 2025/05/06 18:25:57 by fio              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ char	*ft_build(char *stash, char *buffer)
 		stash = ft_strjoin(tmp, buffer);
 		free(tmp);
 	}
-	else if (stash == NULL)
+	else if (stash == NULL && buffer != NULL)
 		stash = ft_strdup (buffer);
 	return (stash);
 }
@@ -34,13 +34,17 @@ char	*ft_build(char *stash, char *buffer)
 void	ft_keep_rest(char **ptr)
 {
 	char	*rest;
+	char	*tmp;
 
-	rest = ft_strdup(ft_strchr(*ptr, '\n') + 1);
+	tmp = ft_strchr(*ptr, '\n');
+	if (tmp == NULL)
+		return ;
+	rest = ft_strdup(tmp + 1);
 	free (*ptr);
 	*ptr = rest;
 }
 
-char	*ft_create_line (char **ptr_stash, char **ptr_buffer, ssize_t count)
+char	*ft_create_line(char **ptr_stash, char **ptr_buffer, ssize_t count)
 {
 	char	*line;
 
@@ -54,7 +58,7 @@ char	*ft_create_line (char **ptr_stash, char **ptr_buffer, ssize_t count)
 		*ptr_buffer = NULL;
 		return (line);
 	}
-	if (ft_strchr(*ptr_stash, '\n') != NULL)
+	if (*ptr_stash && ft_strchr(*ptr_stash, '\n') != NULL)
 	{
 		line = ft_substr(*ptr_stash, 0, (ft_strlen(*ptr_stash)
 					- ft_strlen(ft_strchr(*ptr_stash, '\n'))) + 1);
@@ -80,14 +84,14 @@ char	*get_next_line(int fd)
 	count_read = 1;
 	while (count_read != 0)
 	{
-		if (ft_strchr(stash, '\n') != NULL)
+		if (stash && ft_strchr(stash, '\n') != NULL)
 			return (ft_create_line(&stash, &buffer, count_read));
 		buffer = (char *) malloc (BUFFER_SIZE + 1);
 		if (buffer == NULL)
-			return(NULL);
+			return (NULL);
 		count_read = read(fd, buffer, BUFFER_SIZE);
 		if (count_read <= 0)
-			break;
+			break ;
 		buffer[count_read] = '\0';
 		stash = ft_build(stash, buffer);
 		free(buffer);
@@ -95,20 +99,3 @@ char	*get_next_line(int fd)
 	}
 	return (ft_create_line(&stash, &buffer, count_read));
 }
-
-/*int main (void)
-{
-	int	fd;
-	char *buf = NULL;
-
-	fd = open("./file.txt", O_RDONLY);
-	if (fd < 1)
-		return (1);
-	buf = get_next_line(fd);
-	while (buf != NULL)
-	{
-		printf("%s", buf);
-		buf = get_next_line(fd);
-	}
-	return (0);
-}*/
